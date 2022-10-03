@@ -79,6 +79,17 @@ namespace image_processor
             }
             return bmScaled;
         }
+        public static Bitmap Crop(this Image image,Rectangle rect, InterpolationMode mode)
+        {
+            Bitmap bmCropped = new Bitmap(rect.Width,rect.Height);
+            PointF[] destPoints = GetPoints(new Rectangle(0, 0, rect.Width, rect.Height));
+            using (Graphics g = Graphics.FromImage(bmCropped))
+            {
+                g.Clear(Color.Black);
+                g.DrawImage(image, destPoints,rect,GraphicsUnit.Pixel);
+            }
+            return bmCropped;
+        }
         private static PointF[] GetPoints(RectangleF rectangle)
         {
             return new PointF[3]
@@ -88,6 +99,24 @@ namespace image_processor
             new PointF(rectangle.Left, rectangle.Bottom)
             };
         }
-
+        public static Rectangle ToRectangle(this Point ptFrom, Point ptTo)
+        {
+            int left = Math.Min(ptFrom.X, ptTo.X);
+            int right = Math.Max(ptFrom.X, ptTo.X);
+            int top = Math.Min(ptFrom.Y, ptTo.Y);
+            int bottom = Math.Max(ptFrom.Y, ptTo.Y);
+            int Width = right - left;
+            int Height = bottom - top;
+            return new Rectangle(left, top, Width, Height);
+        }
+        public static void DrawDashedRectangle(this Graphics gr,Color color1, Color color2, float thickness, float dashSize,Point point1, Point point2)
+        {
+            Rectangle rect = point1.ToRectangle(point2);
+            Pen pen = new Pen(color1, thickness);
+            gr.DrawRectangle(pen, rect);
+            pen.DashPattern = new float[] { dashSize,dashSize };
+            pen.Color = color2;
+            gr.DrawRectangle(pen, rect);
+        }
     }
 }

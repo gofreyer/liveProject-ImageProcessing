@@ -9,6 +9,7 @@ using System.Windows.Forms;
 
 using System.Drawing.Drawing2D;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.InteropServices;
 
 namespace image_processor
 {
@@ -21,6 +22,7 @@ namespace image_processor
 
         private Bitmap OriginalBm = null;
         private Bitmap CurrentBm = null;
+        private Point StartPoint, EndPoint;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -293,14 +295,43 @@ namespace image_processor
         // Let the user select an area and crop to that area.
         private void mnuGeometryCrop_Click(object sender, EventArgs e)
         {
-
+            resultPictureBox.MouseDown += crop_MouseDown;
+            resultPictureBox.Cursor = Cursors.Cross;
         }
 
         // Let the user select an area with a desired
         // aspect ratio and crop to that area.
         private void mnuGeometryCropToAspect_Click(object sender, EventArgs e)
         {
+           
+        }
 
+        private void crop_MouseDown(object sender, MouseEventArgs e)
+        {
+            resultPictureBox.MouseDown -= crop_MouseDown;
+            resultPictureBox.MouseMove += crop_MouseMove;
+            resultPictureBox.MouseUp += crop_MouseUp;
+            resultPictureBox.Paint += resultPictureBox_Paint;
+            StartPoint = new Point(e.X, e.Y);
+            EndPoint = StartPoint;
+        }
+        private void crop_MouseMove(object sender, MouseEventArgs e)
+        {
+            EndPoint = new Point(e.X, e.Y);
+            resultPictureBox.Refresh();
+        }
+        private void crop_MouseUp(object sender, MouseEventArgs e)
+        {
+            resultPictureBox.Cursor = Cursors.Default;
+            resultPictureBox.MouseMove -= crop_MouseMove;
+            resultPictureBox.MouseUp -= crop_MouseUp;
+            resultPictureBox.Paint -= resultPictureBox_Paint;
+            CurrentBm = resultPictureBox.Image.Crop(StartPoint.ToRectangle(EndPoint),InterpolationMode.High);
+            resultPictureBox.Image = CurrentBm;
+        }
+        private void resultPictureBox_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawDashedRectangle(Color.Blue, Color.Yellow, (float)1.5, 3, StartPoint, EndPoint);
         }
 
         #endregion Cropping
