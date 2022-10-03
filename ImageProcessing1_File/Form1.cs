@@ -91,7 +91,8 @@ namespace image_processor
         // Restore the original unmodified image.
         private void mnuFileReset_Click(object sender, EventArgs e)
         {
-
+            CurrentBm = (Bitmap)OriginalBm.Clone();
+            resultPictureBox.Image = CurrentBm;
         }
 
         // Make a montage of files.
@@ -117,6 +118,57 @@ namespace image_processor
         // Make a montage of files, four per row.
         private Bitmap MakeMontage(string[] filenames, Color bgColor)
         {
+            List<Bitmap> images = new List<Bitmap>();
+            int maxWidth = 0;
+            int maxHeight = 0;  
+            foreach (string filename in filenames)
+            {
+                Bitmap bm = LoadBitmapUnlocked(filename);
+                images.Add(bm);
+
+                if (bm.Width > maxWidth)
+                {
+                    maxWidth = bm.Width;    
+                }
+                if (bm.Height > maxHeight)
+                {
+                    maxHeight = bm.Height;  
+                }
+            }
+            int rows = 0;
+            int cols = 0;
+            if (images.Count > 0)
+            {
+                rows = (images.Count - 1) / 4 + 1;
+                if (rows <= 1)
+                {
+                    cols = images.Count;
+                }
+                else
+                {
+                    cols = 4;
+                }
+                Bitmap bmMontage = new Bitmap(cols * maxWidth, rows * maxHeight);
+
+                using (Graphics g = Graphics.FromImage(bmMontage))
+                {
+                    g.Clear(bgColor);
+                    for (int r = 0; r < rows; r++)
+                    {
+                        for (int c = 0; c < cols; c++)
+                        {
+                            int index = r * cols + c;
+                            if (index < images.Count)
+                            {
+                                Bitmap bm = images[r * cols + c];
+                                g.DrawImage(bm, c * maxWidth, r * maxHeight);
+                            }
+                        }
+                    }
+                }
+                return bmMontage;
+            }
+
             return null;
         }
 
