@@ -716,6 +716,27 @@ namespace image_processor
 
         private void mnuFiltersUnsharpMask_Click(object sender, EventArgs e)
         {
+            if (CurrentBm != null)
+            {
+                int radius = 1;
+                float amount = 1;
+                string unsharpMaskParams = InputForm.GetString("Set the unsharpmask parameters", "Unsharpmask parameters as string pattern 'radius;amount'", "1;10,0");
+                if (unsharpMaskParams == null)
+                {
+                    return;
+                }
+                string[] umParams = unsharpMaskParams.Split(';');
+                if (umParams.Length == 2)
+                {
+                    if (int.TryParse(umParams[0], out radius) && float.TryParse(umParams[1], out amount) && radius > 0 && amount > 0)
+                    {
+                        CurrentBm = CurrentBm.UnsharpMask(radius, amount);
+                        resultPictureBox.Image = CurrentBm;
+                        return;
+                    }
+                }
+                MessageBox.Show("The unsharpmask parameters do not fit.");
+            }
 
         }
 

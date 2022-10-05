@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -158,6 +159,102 @@ namespace image_processor
 
             // It is now unlocked.
             m_IsLocked = false;
+        }
+
+        public static Bitmap32 operator - (Bitmap32 bitmap1, Bitmap32 bitmap2)
+        {
+            int width = Math.Min(bitmap1.Width,bitmap2.Width);
+            int height = Math.Min(bitmap1.Height,bitmap2.Height);
+            Bitmap bmResult = new Bitmap(width,height);
+            Bitmap32 bitmapResult = new Bitmap32(bmResult);
+            bitmap1.LockBitmap();
+            bitmap2.LockBitmap();
+            bitmapResult.LockBitmap();
+
+            byte r1, g1,b1,a1,r2,g2,b2,a2;
+            int r, g, b;
+
+            for (int row = 0; row < bitmapResult.Height; row++)
+            {
+                for (int col = 0; col < bitmapResult.Width; col++)
+                {
+                    bitmap1.GetPixel(col, row, out r1, out g1, out b1, out a1);
+                    bitmap2.GetPixel(col, row, out r2, out g2, out b2, out a2);
+                    r = (int)r1 - (int)r2;
+                    g = (int)g1 - (int)g2;
+                    b = (int)b1 - (int)b2;
+                    bitmapResult.SetPixel(col, row, r.ToByte(), g.ToByte(), b.ToByte(),a1);
+                }
+            }
+            bitmap1.UnlockBitmap();
+            bitmap2.UnlockBitmap();
+            bitmapResult.UnlockBitmap();
+
+            return bitmapResult;
+        }
+        public static Bitmap32 operator +(Bitmap32 bitmap1, Bitmap32 bitmap2)
+        {
+            int width = Math.Min(bitmap1.Width, bitmap2.Width);
+            int height = Math.Min(bitmap1.Height, bitmap2.Height);
+            Bitmap bmResult = new Bitmap(width, height);
+            Bitmap32 bitmapResult = new Bitmap32(bmResult);
+            bitmap1.LockBitmap();
+            bitmap2.LockBitmap();
+            bitmapResult.LockBitmap();
+
+            byte r1, g1, b1, a1, r2, g2, b2, a2;
+            int r, g, b;
+
+            for (int row = 0; row < bitmapResult.Height; row++)
+            {
+                for (int col = 0; col < bitmapResult.Width; col++)
+                {
+                    bitmap1.GetPixel(col, row, out r1, out g1, out b1, out a1);
+                    bitmap2.GetPixel(col, row, out r2, out g2, out b2, out a2);
+                    r = (int)r1 + (int)r2;
+                    g = (int)g1 + (int)g2;
+                    b = (int)b1 + (int)b2;
+                    bitmapResult.SetPixel(col, row, r.ToByte(), g.ToByte(), b.ToByte(), a1);
+                }
+            }
+            bitmap1.UnlockBitmap();
+            bitmap2.UnlockBitmap();
+            bitmapResult.UnlockBitmap();
+
+            return bitmapResult;
+        }
+        public static Bitmap32 operator *(Bitmap32 bitmap1, float f)
+        {
+            int width = bitmap1.Width;
+            int height = bitmap1.Height;
+            Bitmap bmResult = new Bitmap(width, height);
+            Bitmap32 bitmapResult = new Bitmap32(bmResult);
+            bitmap1.LockBitmap();
+            bitmapResult.LockBitmap();
+
+            byte r1, g1, b1, a1;
+            float r, g, b;
+
+            for (int row = 0; row < bitmapResult.Height; row++)
+            {
+                for (int col = 0; col < bitmapResult.Width; col++)
+                {
+                    bitmap1.GetPixel(col, row, out r1, out g1, out b1, out a1);
+                    
+                    r = (float)r1 * f;
+                    g = (float)g1 * f;
+                    b = (float)b1 * f;
+                    bitmapResult.SetPixel(col, row, r.ToByte(), g.ToByte(), b.ToByte(), a1);
+                }
+            }
+            bitmap1.UnlockBitmap();
+            bitmapResult.UnlockBitmap();
+
+            return bitmapResult;
+        }
+        public static Bitmap32 operator *(float f, Bitmap32 bitmap1)
+        {
+            return bitmap1 * f;
         }
     }
 }

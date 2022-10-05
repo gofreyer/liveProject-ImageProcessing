@@ -360,5 +360,23 @@ namespace image_processor
             float offset = 0;
             return bm.ApplyKernel(kernel, weight, offset);
         }
+
+        // Perform unsharp masking.
+        // sharpened = original + (original - blurred) × amount.
+        public static Bitmap UnsharpMask(this Bitmap bm, int radius, float amount)
+        {
+            Bitmap32 bitmap = new Bitmap32(bm);
+            
+            Bitmap bmBlur = new Bitmap(bm.Width,bm.Height);
+            bmBlur = bm.BoxBlur(radius);
+            Bitmap32 bitmapBlur = new Bitmap32(bmBlur);
+
+            Bitmap bmResult = new Bitmap(bm.Width, bm.Height);
+            Bitmap32 bitmapResult = new Bitmap32(bmResult);
+
+            bitmapResult = bitmap + (bitmap - bitmapBlur) * amount;
+
+            return bitmapResult.Bitmap;
+        }
     }
 }
