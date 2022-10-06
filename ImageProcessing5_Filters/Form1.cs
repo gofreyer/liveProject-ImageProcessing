@@ -775,7 +775,7 @@ namespace image_processor
                     return;
                 }
                 int rank = (2 * medianradius + 1)* (2 * medianradius + 1) / 2;
-                CurrentBm = CurrentBm = CurrentBm.RankFilter(medianradius, medianradius, rank);
+                CurrentBm = CurrentBm.RankFilter(medianradius, medianradius, rank);
                 resultPictureBox.Image = CurrentBm;
             }
         }
@@ -790,7 +790,7 @@ namespace image_processor
                     return;
                 }
                 int rank = 0;
-                CurrentBm = CurrentBm = CurrentBm.RankFilter(minradius, minradius, rank);
+                CurrentBm = CurrentBm.RankFilter(minradius, minradius, rank);
                 resultPictureBox.Image = CurrentBm;
             }
 
@@ -806,7 +806,7 @@ namespace image_processor
                     return;
                 }
                 int rank = (2 * maxradius + 1) * (2 * maxradius + 1) - 1;
-                CurrentBm = CurrentBm = CurrentBm.RankFilter(maxradius, maxradius, rank);
+                CurrentBm = CurrentBm.RankFilter(maxradius, maxradius, rank);
                 resultPictureBox.Image = CurrentBm;
             }
 
@@ -817,10 +817,86 @@ namespace image_processor
         // If the user clicks OK, apply the kernel.
         private void mnuFiltersCustomKernel_Click(object sender, EventArgs e)
         {
-
+            KernelForm kernelForm = new KernelForm();
+            DialogResult result = kernelForm.ShowDialog();
+            if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+            int weight = 0;
+            int offset = 0;
+            float[,] kernel = GetKernel(kernelForm.valueTextBox.Text);
+            if (int.TryParse(kernelForm.weightTextBox.Text, out weight) && int.TryParse(kernelForm.offsetTextBox.Text, out offset) && kernel != null)
+            {
+                CurrentBm = CurrentBm.ApplyKernel(kernel, 1.0f / (float)weight, (float)offset);
+                resultPictureBox.Image = CurrentBm;
+            }
         }
 
+        private static float[,] GetKernel(string kernelText)
+        {
+            kernelText = kernelText.Trim();
+            if (kernelText.Length <= 0)
+            {
+                return null;
+            }
+            List<String> rows = new List<String>();
+            int start = 0;
+            int count = 0;
+            int position;
+            do
+            {
+                position = kernelText.IndexOf("\r\n", start);
+                if (position >= 0)
+                {
+                    count++;
+                    rows.Add(kernelText.Substring(start, position - start).Trim());
+                    start = position + 2;
+                }
+            } while (position > 0);
+            string rest = kernelText.Substring(start).Trim();
+            if (rest.Length > 0)
+            {
+                rows.Add(rest);
+            }
+
+            int rowCount = rows.Count;
+            int colCount = 0;
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                string[] cols = rows[r].Split(',');
+                if (cols.Length > colCount) colCount = cols.Length;
+            }
+
+            if (rowCount <= 0 || colCount <= 0)
+            {
+                return null;
+            }
+
+            float[,] kernel = new float[rowCount, colCount];
+            
+            for (int r = 0; r < rowCount; r++)
+            {
+                string[] cols = rows[r].Split(',');
+                for (int c = 0; c < colCount; c++)
+                {
+                    int val = 0;
+                    if (c < cols.Length)
+                    {
+                        if (!int.TryParse(cols[c].Trim(),out val))
+                        {
+                            val = 0;
+                        }
+                    }
+                    kernel[r,c] = (float)(val);
+                }
+            }
+            return kernel;
+        }
         #endregion Filters
 
     }
 }
+
+
