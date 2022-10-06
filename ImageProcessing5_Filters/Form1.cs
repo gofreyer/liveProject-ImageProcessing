@@ -742,21 +742,73 @@ namespace image_processor
 
         private void mnuFiltersRankFilter_Click(object sender, EventArgs e)
         {
-
+            if (CurrentBm != null)
+            {
+                int radius = 1;
+                int rank;
+                string rankParams = InputForm.GetString("Set the rank parameters", "Rank parameters as string pattern 'radius;rank'", "1;3");
+                if (rankParams == null)
+                {
+                    return;
+                }
+                string[] rParams = rankParams.Split(';');
+                if (rParams.Length == 2)
+                {
+                    if (int.TryParse(rParams[0], out radius) && int.TryParse(rParams[1], out rank) && radius > 0 && rank > 0)
+                    {
+                        CurrentBm = CurrentBm.RankFilter(radius, radius, rank);
+                        resultPictureBox.Image = CurrentBm;
+                        return;
+                    }
+                }
+                MessageBox.Show("The rank parameters do not fit.");
+            }
         }
 
         private void mnuFiltersMedianFilter_Click(object sender, EventArgs e)
         {
-
+            if (CurrentBm != null)
+            {
+                int medianradius = InputForm.GetInt("Set the median radius", "Median radius between 0 and 255", "1", (int)0, (int)255, "The value does not fit.");
+                if (!(medianradius > int.MinValue))
+                {
+                    return;
+                }
+                int rank = (2 * medianradius + 1)* (2 * medianradius + 1) / 2;
+                CurrentBm = CurrentBm = CurrentBm.RankFilter(medianradius, medianradius, rank);
+                resultPictureBox.Image = CurrentBm;
+            }
         }
 
         private void mnuFiltersMinFilter_Click(object sender, EventArgs e)
         {
+            if (CurrentBm != null)
+            {
+                int minradius = InputForm.GetInt("Set the min radius", "Min radius between 0 and 255", "1", (int)0, (int)255, "The value does not fit.");
+                if (!(minradius > int.MinValue))
+                {
+                    return;
+                }
+                int rank = 0;
+                CurrentBm = CurrentBm = CurrentBm.RankFilter(minradius, minradius, rank);
+                resultPictureBox.Image = CurrentBm;
+            }
 
         }
 
         private void mnuFiltersMaxFilter_Click(object sender, EventArgs e)
         {
+            if (CurrentBm != null)
+            {
+                int maxradius = InputForm.GetInt("Set the max radius", "Max radius between 0 and 255", "1", (int)0, (int)255, "The value does not fit.");
+                if (!(maxradius > int.MinValue))
+                {
+                    return;
+                }
+                int rank = (2 * maxradius + 1) * (2 * maxradius + 1) - 1;
+                CurrentBm = CurrentBm = CurrentBm.RankFilter(maxradius, maxradius, rank);
+                resultPictureBox.Image = CurrentBm;
+            }
 
         }
 

@@ -378,5 +378,69 @@ namespace image_processor
 
             return bitmapResult.Bitmap;
         }
+
+        public static Bitmap RankFilter(this Bitmap bm,int xradius, int yradius, int rank)
+        {
+            Bitmap bmResult = new Bitmap(bm.Width, bm.Height);
+            using (Graphics gr = Graphics.FromImage(bmResult))
+            {
+                gr.Clear(Color.Black);
+            }
+
+            byte r, g, b, a;
+            PixelData pixData;
+
+            Bitmap32 bitmapSource = new Bitmap32(bm);
+            Bitmap32 bitmapResult = new Bitmap32(bmResult);
+            bitmapSource.LockBitmap();
+            bitmapResult.LockBitmap();
+
+            int winWidth = 2 * xradius + 1;
+            int winHeight = 2 * yradius + 1;
+
+            int midWinRow = winHeight / 2;
+            int midWinCol = winWidth / 2;
+            int pixrow, pixcol;
+            for (int row = 0; row < bm.Height; row++)
+            {
+                for (int col = 0; col < bm.Width; col++)
+                {
+                    List<PixelData> pixDataList = new List<PixelData>();
+                    for (int wrow = 0; wrow < winHeight; wrow++)
+                    {
+                        for (int wcol = 0; wcol < winWidth; wcol++)
+                        {
+                            pixrow = row + wrow - midWinRow;
+                            pixcol = col + wcol - midWinCol;
+                            bitmapSource.GetPixel(pixcol, pixrow, out r, out g, out b, out a);
+
+                            pixDataList.Add(new PixelData(r, g, b, a));
+                        }
+                    }
+                    List<PixelData> sortedList = new List<PixelData>();
+                    sortedList = pixDataList.OrderBy(pd => pd.Brightness).ToList();
+                    if (sortedList.Count>0 && rank < sortedList.Count)
+                    {
+                        pixData = sortedList[rank];
+                    }
+                    else
+                    {
+                        pixData = new PixelData(0, 0, 0, 255);
+                    }
+                                        
+                    bitmapSource.GetPixel(col, row, out r, out g, out b, out a);
+
+                    r = pixData.R;
+                    g = pixData.G;
+                    b = pixData.B;
+
+                    bitmapResult.SetPixel(col, row, r, g, b, a);
+                }
+            }
+            bitmapSource.UnlockBitmap();
+            bitmapResult.UnlockBitmap();
+
+            return bitmapResult.Bitmap;
+        }
     }
 }

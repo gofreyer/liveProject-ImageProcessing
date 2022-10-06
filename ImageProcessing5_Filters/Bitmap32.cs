@@ -6,6 +6,27 @@ using System.Runtime.InteropServices;
 
 namespace image_processor
 {
+    public struct PixelData
+    {
+        public byte R;
+        public byte G;
+        public byte B;
+        public byte A;
+        public PixelData(byte _r, byte _g, byte _b, byte _a)
+        {
+            R = _r;
+            G = _g;
+            B = _b;
+            A = _a;
+        }
+        public int Brightness
+        {
+            get
+            {
+                return (R + G + B);
+            }
+        }
+    }
     public class Bitmap32
     {
         // Provide public access to the picture's byte data.
